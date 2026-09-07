@@ -8,7 +8,7 @@ from rewardkit import criterion
 
 TRAJECTORY = Path("/logs/agent/trajectory.json")
 SESSIONS = Path("/logs/agent/sessions")
-EXPECTED_TOOL = "mcp__costco__find_warehouses"
+EXPECTED_TOOLS = json.loads(r"""["mcp__costco__find_warehouses"]""")
 BYPASS = re.compile(r":8091\b|mock_server\.py|/opt/eval", re.IGNORECASE)
 
 
@@ -37,9 +37,10 @@ def _calls():
     return calls
 
 
-@criterion(description="Agent called the expected Costco MCP tool")
+@criterion(description="Agent called every expected Costco MCP tool")
 def used_mcp_tool(workspace: Path) -> bool:
-    return any(str(call.get("function_name") or "") == EXPECTED_TOOL for call in _calls())
+    called = {str(call.get("function_name") or "") for call in _calls()}
+    return all(tool in called for tool in EXPECTED_TOOLS)
 
 
 @criterion(description="Agent did not bypass the Costco MCP server")

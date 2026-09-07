@@ -14,7 +14,7 @@ TASKS = {
             "Find the nearest Costco warehouse to ZIP code 94109. Report its numeric "
             "warehouse number and full warehouse name."
         ),
-        "tool": "find_warehouses",
+        "tools": ["find_warehouses"],
         "answer": {"warehouse_number": "144", "name": "South San Francisco"},
     },
     "quinoa-price": {
@@ -23,7 +23,7 @@ TASKS = {
             "For Costco warehouse 144 and postal code 94080, find organic quinoa and "
             "report the selected product name and public Costco.com price as a number."
         ),
-        "tool": "search_products",
+        "tools": ["search_products"],
         "answer": {"name": "Kirkland Signature Organic Quinoa, 4.5 lb", "price": 18.99},
     },
     "product-by-item": {
@@ -32,7 +32,7 @@ TASKS = {
             "For Costco warehouse 144, look up item number 1234567 and report its "
             "product name and public Costco.com price as a number."
         ),
-        "tool": "get_product",
+        "tools": ["get_product"],
         "answer": {"name": "Kirkland Signature Organic Quinoa, 4.5 lb", "price": 18.99},
     },
     "shopping-list": {
@@ -42,13 +42,87 @@ TASKS = {
             "one package of organic quinoa and one package of jasmine rice. Report the "
             "selected product names and combined public Costco.com total as a number."
         ),
-        "tool": "price_shopping_list",
+        "tools": ["price_shopping_list"],
         "answer": {
             "items": [
                 "Kirkland Signature Organic Quinoa, 4.5 lb",
                 "Kirkland Signature Jasmine Rice, 25 lb",
             ],
             "estimated_total": 31.48,
+        },
+    },
+    "two-dinner-run": {
+        "description": "Turn a location and two dinners into one warehouse-specific Costco run.",
+        "instruction": (
+            "I am near ZIP code 94109 and want to make chicken tacos and chicken Caesar "
+            "salad bowls for four people, reusing one rotisserie chicken across both meals. "
+            "Find the nearest warehouse, then price one package each of rotisserie chicken, "
+            "flour tortillas, shredded Mexican cheese, and a Caesar salad kit there. Report "
+            "the warehouse number and name, selected product names, public Costco.com total, "
+            "and the exact selected product reused across both dinners."
+        ),
+        "tools": ["find_warehouses", "price_shopping_list"],
+        "answer": {
+            "warehouse_number": "144",
+            "warehouse_name": "South San Francisco",
+            "items": [
+                "Kirkland Signature Rotisserie Chicken, 3 lb",
+                "Organic Flour Tortillas, 40 ct",
+                "Mexican Style Blend Shredded Cheese, 2.5 lb",
+                "Organic Caesar Salad Kit, 24 oz",
+            ],
+            "estimated_total": 31.46,
+            "reused_product": "Kirkland Signature Rotisserie Chicken, 3 lb",
+        },
+    },
+    "bulk-package-math": {
+        "description": "Convert a household quantity into Costco packages and extended cost.",
+        "instruction": (
+            "For Costco warehouse 144 and postal code 94080, I need at least 20 rolls "
+            "of paper towels. Find the relevant product, use its package quantity, and "
+            "report the product name, rolls per package, minimum packages to buy, total "
+            "rolls purchased, and public Costco.com extended total."
+        ),
+        "tools": ["search_products"],
+        "answer": {
+            "name": "Kirkland Signature Paper Towels, 12 rolls",
+            "rolls_per_package": 12,
+            "packages_to_buy": 2,
+            "total_rolls": 24,
+            "estimated_total": 47.98,
+        },
+    },
+    "incomplete-estimate": {
+        "description": "Keep hidden prices out of a Costco shopping-list estimate.",
+        "instruction": (
+            "For Costco warehouse 144 and postal code 94080, price one package of organic "
+            "quinoa and one package of avocados. Report requested and priced item counts, "
+            "the known subtotal, the selected product whose public price is hidden, and "
+            "whether the estimate is complete. Never treat a hidden price as zero."
+        ),
+        "tools": ["price_shopping_list"],
+        "answer": {
+            "requested_items": 2,
+            "priced_items": 1,
+            "known_subtotal": 18.99,
+            "unpriced_product": "Hass Avocados, 6 ct",
+            "estimate_complete": False,
+        },
+    },
+    "compare-alternatives": {
+        "description": "Choose the least expensive warehouse-signaled catalog alternative.",
+        "instruction": (
+            "For Costco warehouse 144 and postal code 94080, search for olive oil. Of the "
+            "returned products that are buyable and carry the InWarehouse catalog signal, "
+            "choose the one with the lowest public Costco.com price. Report its item number, "
+            "name, price, and savings versus the other qualifying result."
+        ),
+        "tools": ["search_products"],
+        "answer": {
+            "item_number": "2468101",
+            "name": "Kirkland Signature Extra Virgin Olive Oil, 2 L",
+            "price": 24.99,
+            "savings": 7.0,
         },
     },
 }
@@ -184,6 +258,114 @@ RICE = {
     },
     "additionalFieldData": {"rating": "4.7", "numberOfRating": 212},
 }
+CHICKEN = {
+    "itemNumber": "1000001",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "4.99", "listPrice": "-1.00000"},
+    "attributes": [{"key": "Package Quantity", "value": "3 lb", "type": "string"}],
+    "description": {
+        "shortDescription": "Kirkland Signature Rotisserie Chicken, 3 lb",
+        "longDescription": "Prepared rotisserie chicken.",
+    },
+    "additionalFieldData": {},
+}
+TORTILLAS = {
+    "itemNumber": "1000002",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "7.99", "listPrice": "-1.00000"},
+    "attributes": [{"key": "Package Quantity", "value": "40 ct", "type": "string"}],
+    "description": {
+        "shortDescription": "Organic Flour Tortillas, 40 ct",
+        "longDescription": "Organic flour tortillas.",
+    },
+    "additionalFieldData": {},
+}
+CHEESE = {
+    "itemNumber": "1000003",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "11.49", "listPrice": "-1.00000"},
+    "attributes": [{"key": "Package Quantity", "value": "2.5 lb", "type": "string"}],
+    "description": {
+        "shortDescription": "Mexican Style Blend Shredded Cheese, 2.5 lb",
+        "longDescription": "Shredded Mexican-style cheese blend.",
+    },
+    "additionalFieldData": {},
+}
+SALAD = {
+    "itemNumber": "1000004",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "6.99", "listPrice": "-1.00000"},
+    "attributes": [{"key": "Package Quantity", "value": "24 oz", "type": "string"}],
+    "description": {
+        "shortDescription": "Organic Caesar Salad Kit, 24 oz",
+        "longDescription": "Caesar salad kit.",
+    },
+    "additionalFieldData": {},
+}
+PAPER_TOWELS = {
+    "itemNumber": "1000005",
+    "buyable": 1,
+    "programTypes": "InWarehouse,ShipIt",
+    "priceData": {"price": "23.99", "listPrice": "27.99"},
+    "attributes": [{"key": "Package Quantity", "value": "12 rolls", "type": "string"}],
+    "description": {
+        "shortDescription": "Kirkland Signature Paper Towels, 12 rolls",
+        "longDescription": "Two-ply paper towels.",
+    },
+    "additionalFieldData": {},
+}
+AVOCADOS = {
+    "itemNumber": "1000006",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "0.00000", "listPrice": "-1.00000"},
+    "attributes": [{"key": "Package Quantity", "value": "6 ct", "type": "string"}],
+    "description": {
+        "shortDescription": "Hass Avocados, 6 ct",
+        "longDescription": "Fresh Hass avocados.",
+    },
+    "additionalFieldData": {},
+}
+OLIVE_OIL_ORGANIC = {
+    "itemNumber": "2468100",
+    "buyable": 1,
+    "programTypes": "InWarehouse,ShipIt",
+    "priceData": {"price": "31.99", "listPrice": "34.99"},
+    "attributes": [{"key": "Package Quantity", "value": "2 L", "type": "string"}],
+    "description": {
+        "shortDescription": "Kirkland Signature Organic Extra Virgin Olive Oil, 2 L",
+        "longDescription": "Organic extra virgin olive oil.",
+    },
+    "additionalFieldData": {},
+}
+OLIVE_OIL = {
+    "itemNumber": "2468101",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "24.99", "listPrice": "29.99"},
+    "attributes": [{"key": "Package Quantity", "value": "2 L", "type": "string"}],
+    "description": {
+        "shortDescription": "Kirkland Signature Extra Virgin Olive Oil, 2 L",
+        "longDescription": "Extra virgin olive oil.",
+    },
+    "additionalFieldData": {},
+}
+PRODUCTS = [
+    QUINOA,
+    RICE,
+    CHICKEN,
+    TORTILLAS,
+    CHEESE,
+    SALAD,
+    PAPER_TOWELS,
+    AVOCADOS,
+    OLIVE_OIL_ORGANIC,
+    OLIVE_OIL,
+]
 WAREHOUSE = {
     "salesLocationId": 144,
     "name": [{"localeCode": "en-US", "value": "South San Francisco"}],
@@ -223,11 +405,28 @@ class Handler(BaseHTTPRequestHandler):
         request = json.loads(self.rfile.read(size) or b"{}")
         if self.path == "/search":
             query = str(request.get("query") or "").lower()
-            item = RICE if "rice" in query else QUINOA
+            if "rice" in query:
+                matches = [RICE]
+            elif "chicken" in query:
+                matches = [CHICKEN]
+            elif "tortilla" in query:
+                matches = [TORTILLAS]
+            elif "cheese" in query:
+                matches = [CHEESE]
+            elif "salad" in query:
+                matches = [SALAD]
+            elif "paper towel" in query:
+                matches = [PAPER_TOWELS]
+            elif "avocado" in query:
+                matches = [AVOCADOS]
+            elif "olive oil" in query:
+                matches = [OLIVE_OIL_ORGANIC, OLIVE_OIL]
+            else:
+                matches = [QUINOA]
             self._send(
                 {
                     "searchResult": {
-                        "totalCount": 1,
+                        "totalCount": len(matches),
                         "results": [
                             {
                                 "id": item["itemNumber"],
@@ -238,6 +437,7 @@ class Handler(BaseHTTPRequestHandler):
                                     "attributes": {},
                                 },
                             }
+                            for item in matches
                         ],
                     }
                 }
@@ -245,11 +445,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if self.path == "/graphql":
             query = str(request.get("query") or "")
-            items = []
-            if QUINOA["itemNumber"] in query:
-                items.append(QUINOA)
-            if RICE["itemNumber"] in query:
-                items.append(RICE)
+            items = [item for item in PRODUCTS if item["itemNumber"] in query]
             self._send({"data": {"products": {"catalogData": items}}})
             return
         self.send_error(404)
@@ -276,7 +472,7 @@ from rewardkit import criterion
 
 TRAJECTORY = Path("/logs/agent/trajectory.json")
 SESSIONS = Path("/logs/agent/sessions")
-EXPECTED_TOOL = "mcp__costco__{tool}"
+EXPECTED_TOOLS = json.loads(r"""{tools}""")
 BYPASS = re.compile(r":8091\\b|mock_server\\.py|/opt/eval", re.IGNORECASE)
 
 
@@ -305,9 +501,10 @@ def _calls():
     return calls
 
 
-@criterion(description="Agent called the expected Costco MCP tool")
+@criterion(description="Agent called every expected Costco MCP tool")
 def used_mcp_tool(workspace: Path) -> bool:
-    return any(str(call.get("function_name") or "") == EXPECTED_TOOL for call in _calls())
+    called = {{str(call.get("function_name") or "") for call in _calls()}}
+    return all(tool in called for tool in EXPECTED_TOOLS)
 
 
 @criterion(description="Agent did not bypass the Costco MCP server")
@@ -381,7 +578,11 @@ def answer_shape(answer: dict) -> dict:
     shape = {}
     for key, value in answer.items():
         if isinstance(value, list):
-            shape[key] = ["<item 1>", "<item 2>"]
+            shape[key] = [f"<item {index}>" for index in range(1, len(value) + 1)]
+        elif isinstance(value, bool):
+            shape[key] = False
+        elif isinstance(value, int):
+            shape[key] = 0
         elif isinstance(value, float):
             shape[key] = 0.0
         else:
@@ -418,7 +619,8 @@ def main() -> None:
         (task / "tests" / "outcome" / "check.py").write_text(
             OUTCOME_CHECK.format(expected=json.dumps(spec["answer"], indent=2))
         )
-        (task / "tests" / "process" / "check.py").write_text(PROCESS_CHECK.format(tool=spec["tool"]))
+        expected_tools = [f"mcp__costco__{tool}" for tool in spec["tools"]]
+        (task / "tests" / "process" / "check.py").write_text(PROCESS_CHECK.format(tools=json.dumps(expected_tools)))
         for executable in (
             task / "environment" / "start-mcp",
             task / "solution" / "solve.sh",
