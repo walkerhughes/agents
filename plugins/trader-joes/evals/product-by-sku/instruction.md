@@ -13,6 +13,6 @@ Write the answer to `/app/answer.json` as one JSON object with exactly this shap
 {
   "name": "<name>",
   "size": "<size>",
-  "price": "<price>"
+  "price": 0.0
 }
 ```

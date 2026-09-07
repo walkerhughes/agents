@@ -12,6 +12,6 @@ Write the answer to `/app/answer.json` as one JSON object with exactly this shap
 ```json
 {
   "name": "<name>",
-  "price": "<price>"
+  "price": 0.0
 }
 ```

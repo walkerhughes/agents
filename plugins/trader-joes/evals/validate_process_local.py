@@ -56,6 +56,24 @@ def _score(module, trajectory: dict | None, session_lines: list[str]) -> tuple[b
         return module.used_mcp_tool(root), module.no_direct_endpoint_access(root)
 
 
+def _score_outcome(module, answer: dict | None) -> bool:
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        if answer is not None:
+            (root / "answer.json").write_text(json.dumps(answer))
+        return module.answer_matches(root)
+
+
+def _agent_style(answer):
+    if isinstance(answer, float):
+        return str(answer)
+    if isinstance(answer, list) and all(isinstance(item, str) for item in answer):
+        return ", ".join(answer)
+    if isinstance(answer, dict):
+        return {key: _agent_style(value) for key, value in answer.items()}
+    return answer
+
+
 def main() -> int:
     _stub_rewardkit()
     failures = []
@@ -82,10 +100,27 @@ def main() -> int:
             actual = _score(module, trajectory, sessions)
             if actual != expected:
                 failures.append(f"{path.parents[2].name}/{name}: expected {expected}, got {actual}")
+
+    outcome_checkers = sorted(ROOT.glob("*/tests/outcome/check.py"))
+    for path in outcome_checkers:
+        module = _load(path)
+        cases = [
+            ("solved", module.EXPECTED, True),
+            ("agent-style", _agent_style(module.EXPECTED), True),
+            ("empty", None, False),
+            ("wrong", {}, False),
+        ]
+        for name, answer, expected in cases:
+            actual = _score_outcome(module, answer)
+            if actual != expected:
+                failures.append(f"{path.parents[2].name}/{name}: expected {expected}, got {actual}")
     if failures:
         print("\n".join(failures), file=sys.stderr)
         return 1
-    print(f"process criteria ok: {len(checkers) * 7} checks across {len(checkers)} evals")
+    print(
+        f"eval criteria ok: {len(checkers) * 7} process and "
+        f"{len(outcome_checkers) * 4} outcome checks across {len(checkers)} evals"
+    )
     return 0
 
 

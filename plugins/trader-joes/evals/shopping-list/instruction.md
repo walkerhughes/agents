@@ -11,7 +11,10 @@ Write the answer to `/app/answer.json` as one JSON object with exactly this shap
 
 ```json
 {
-  "items": "<items>",
-  "estimated_total": "<estimated_total>"
+  "items": [
+    "<item 1>",
+    "<item 2>"
+  ],
+  "estimated_total": 0.0
 }
 ```
