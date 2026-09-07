@@ -1,0 +1,31 @@
+schema_version = "1.1"
+
+[task]
+name = "trader-joes/product-by-sku"
+description = "Look up a known Trader Joe's product by SKU at store 200."
+authors = []
+keywords = ["mcp", "trader-joes", "eval"]
+
+[metadata]
+category = "mcp"
+difficulty = "easy"
+
+[agent]
+timeout_sec = 300.0
+
+[verifier]
+timeout_sec = 60.0
+
+[environment]
+build_timeout_sec = 900.0
+cpus = 1
+memory_mb = 2048
+storage_mb = 10240
+gpus = 0
+network_mode = "public"
+
+[[environment.mcp_servers]]
+name = "trader-joes"
+transport = "stdio"
+command = "/opt/eval/start-mcp"
+args = []

@@ -1,6 +1,6 @@
-.PHONY: check lint format typecheck test coverage selftest
+.PHONY: check lint format typecheck test coverage selftest validate-process evals
 
-check: lint typecheck selftest test
+check: lint typecheck selftest test validate-process
 
 lint:
 	uv run ruff check .
@@ -21,3 +21,9 @@ test:
 
 coverage:
 	uv run pytest --cov=src --cov-report=term-missing
+
+validate-process:
+	python3 evals/validate_process_local.py
+
+evals:
+	bash evals/run_evals.sh
