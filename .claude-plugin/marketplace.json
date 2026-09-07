@@ -30,6 +30,11 @@
       "name": "trader-joes",
       "source": "./plugins/trader-joes",
       "description": "Find nearby Trader Joe's stores, search store-scoped products and published prices, price shopping lists, and plan menus from website-backed catalog items."
+    },
+    {
+      "name": "costco",
+      "source": "./plugins/costco",
+      "description": "Find nearby Costco warehouses, search warehouse-context products and public Costco.com prices, price shopping lists, and plan bulk-friendly menus."
     }
   ]
 }

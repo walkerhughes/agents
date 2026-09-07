@@ -12,6 +12,7 @@ Formerly `walkerhughes/mcps`, back when it only held MCP servers.
 |--------|---------------------|--------|
 | [`fred`](plugins/fred/) | The [FRED API](https://fred.stlouisfed.org/docs/api/fred/): the St. Louis Fed's economic time series, plus revision history and the release calendar (5 tools, and `/fred:auth` to store your key). | yes |
 | [`harbor-hub`](plugins/harbor-hub/) | The [Harbor](https://www.harborframework.com) hub: evaluation jobs, trials, uploads, and published packages. | yes |
+| [`costco`](plugins/costco/) | Costco's public website: nearby warehouses, warehouse-context products and public prices, shopping lists, and bulk-friendly menu planning (4 tools). | yes |
 | [`tastytrade`](plugins/tastytrade/) | The [TastyTrade Open API](https://developer.tastytrade.com/getting-started/): brokerage account, market data, and order management (12 tools). | not yet |
 | [`trader-joes`](plugins/trader-joes/) | Trader Joe's public website: nearby stores, store-scoped products and prices, shopping lists, and menu planning (4 tools). | yes |
 
@@ -77,6 +78,7 @@ claude/
 └── plugins/
     ├── fred/
     ├── harbor-hub/
+    ├── costco/
     ├── persona/
     ├── tastytrade/
     └── trader-joes/
