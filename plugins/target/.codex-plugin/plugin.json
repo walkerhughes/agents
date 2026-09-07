@@ -1,0 +1,33 @@
+{
+  "name": "target",
+  "version": "0.1.0",
+  "description": "Search Target products, check store-scoped prices and nearby availability, and build shopping lists and menus.",
+  "author": {
+    "name": "Walker Hughes"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/walkerhughes/agents/tree/main/plugins/target",
+  "repository": "https://github.com/walkerhughes/agents",
+  "keywords": ["target", "shopping", "prices", "pickup", "meal-planning", "mcp"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Target",
+    "shortDescription": "Store-aware products, prices, availability, and lists.",
+    "longDescription": "Search Target's public catalog, compare store-scoped prices, find nearby pickup availability, price shopping lists, and plan practical Target runs.",
+    "developerName": "Walker Hughes",
+    "category": "Lifestyle",
+    "capabilities": ["Read", "Interactive"],
+    "websiteURL": "https://www.target.com/",
+    "defaultPrompt": [
+      "Search Target products and compare prices.",
+      "Find nearby pickup availability for a product.",
+      "Price and organize my Target shopping list."
+    ],
+    "brandColor": "#CC0000"
+  },
+  "mcpServers": {
+    "target": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/start-server.sh"
+    }
+  }
+}
