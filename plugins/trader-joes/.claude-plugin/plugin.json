@@ -1,0 +1,18 @@
+{
+  "name": "trader-joes",
+  "version": "0.1.0",
+  "description": "Find Trader Joe's stores, search the store-scoped product catalog, check published prices, and price shopping lists.",
+  "author": {
+    "name": "Walker Hughes"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/walkerhughes/claude/tree/main/plugins/trader-joes",
+  "repository": "https://github.com/walkerhughes/claude",
+  "keywords": [
+    "trader-joes",
+    "groceries",
+    "shopping-list",
+    "meal-planning",
+    "mcp"
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "trader-joes",
+  "version": "0.1.0",
+  "description": "Find Trader Joe's stores, search store-scoped products and prices, and build shopping lists and menus.",
+  "author": {
+    "name": "Walker Hughes",
+    "url": "https://github.com/walkerhughes"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/walkerhughes/claude/tree/main/plugins/trader-joes",
+  "repository": "https://github.com/walkerhughes/claude",
+  "keywords": [
+    "trader-joes",
+    "groceries",
+    "shopping-list",
+    "meal-planning",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": {
+    "trader-joes": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/start-server.sh"
+    }
+  },
+  "interface": {
+    "displayName": "Trader Joe's",
+    "shortDescription": "Store-aware products, prices, lists, and menus.",
+    "longDescription": "Find nearby Trader Joe's stores, search their published product catalog and prices, price shopping lists, and plan menus around website-backed items.",
+    "developerName": "Walker Hughes",
+    "category": "Lifestyle",
+    "capabilities": [
+      "Read",
+      "Interactive"
+    ],
+    "websiteURL": "https://www.traderjoes.com/",
+    "defaultPrompt": [
+      "Find my nearest store and check product prices.",
+      "Plan a week of Trader Joe's dinners.",
+      "Price and organize my shopping list."
+    ],
+    "brandColor": "#B51F24"
+  }
+}
