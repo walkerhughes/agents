@@ -1,0 +1,25 @@
+{
+  "name": "safeway",
+  "version": "0.1.0",
+  "description": "Find Safeway stores, search store-scoped groceries and prices, and build shopping lists and menus.",
+  "author": {
+    "name": "Walker Hughes"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/walkerhughes/agents/tree/main/plugins/safeway",
+  "repository": "https://github.com/walkerhughes/agents",
+  "keywords": ["safeway", "groceries", "prices", "shopping-list", "meal-planning", "mcp"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Safeway",
+    "shortDescription": "Store-aware groceries, prices, lists, and menus.",
+    "longDescription": "Find nearby Safeway stores, search public store-scoped groceries and prices, inspect aisle and inventory signals, and plan practical shopping lists and menus.",
+    "developerName": "Walker Hughes",
+    "category": "Lifestyle",
+    "capabilities": ["Read", "Interactive"],
+    "websiteURL": "https://www.safeway.com/",
+    "defaultPrompt": ["Find my nearest Safeway and check grocery prices.", "Price and organize my Safeway shopping list.", "Plan meals from products Safeway carries."],
+    "brandColor": "#E31837"
+  },
+  "mcpServers": {"safeway": {"command": "${CLAUDE_PLUGIN_ROOT}/scripts/start-server.sh"}}
+}
