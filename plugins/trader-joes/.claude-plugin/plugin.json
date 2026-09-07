@@ -1,6 +1,6 @@
 {
   "name": "trader-joes",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find Trader Joe's stores, search the store-scoped product catalog, check published prices, and price shopping lists.",
   "author": {
     "name": "Walker Hughes"
