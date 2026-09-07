@@ -1,6 +1,6 @@
 {
   "name": "costco",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find Costco warehouses, search location-scoped products and published prices, and build shopping lists and menus.",
   "author": {
     "name": "Walker Hughes",
