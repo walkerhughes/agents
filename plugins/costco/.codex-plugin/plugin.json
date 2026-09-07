@@ -1,0 +1,40 @@
+{
+  "name": "costco",
+  "version": "0.1.0",
+  "description": "Find Costco warehouses, search location-scoped products and published prices, and build shopping lists and menus.",
+  "author": {
+    "name": "Walker Hughes",
+    "url": "https://github.com/walkerhughes"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/walkerhughes/agents/tree/main/plugins/costco",
+  "repository": "https://github.com/walkerhughes/agents",
+  "keywords": [
+    "costco",
+    "groceries",
+    "shopping-list",
+    "meal-planning",
+    "mcp"
+  ],
+  "skills": "./skills/",
+  "mcpServers": {
+    "costco": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/scripts/start-server.sh"
+    }
+  },
+  "interface": {
+    "displayName": "Costco",
+    "shortDescription": "Warehouse-aware products, prices, lists, and menus.",
+    "longDescription": "Find nearby Costco warehouses, search the public catalog with warehouse context, check published prices, price shopping lists, and plan bulk-friendly menus.",
+    "developerName": "Walker Hughes",
+    "category": "Lifestyle",
+    "capabilities": ["Read", "Interactive"],
+    "websiteURL": "https://www.costco.com/",
+    "defaultPrompt": [
+      "Find my nearest Costco and check product prices.",
+      "Plan bulk-friendly meals from Costco products.",
+      "Price and organize my Costco shopping list."
+    ],
+    "brandColor": "#005DAA"
+  }
+}
