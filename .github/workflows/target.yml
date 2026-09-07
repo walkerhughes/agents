@@ -1,0 +1,80 @@
+name: target
+
+on:
+  pull_request:
+    paths:
+      - "plugins/target/**"
+      - ".github/workflows/target.yml"
+  push:
+    branches: [main]
+    paths:
+      - "plugins/target/**"
+      - ".github/workflows/target.yml"
+
+defaults:
+  run:
+    working-directory: plugins/target
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --locked
+      - run: make check
+      - run: make coverage
+
+  evals:
+    runs-on: ubuntu-latest
+    needs: [check]
+    if: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
+    concurrency:
+      group: target-evals
+      cancel-in-progress: false
+    env:
+      HARBOR_API_KEY: ${{ secrets.HARBOR_API_KEY }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+      CLAUDE_FORCE_OAUTH: "1"
+      MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+      MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+      HARBOR_TEST_ENV: modal
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - run: uv sync --locked --extra modal
+      - run: echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - name: Check the subscription token
+        run: |
+          set -euo pipefail
+          if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
+            echo "::error::CLAUDE_CODE_OAUTH_TOKEN is not set. Mint one with 'claude setup-token' and add it as a repository secret."
+            exit 1
+          fi
+          status="$(curl -sS -o /tmp/auth-probe.json -w '%{http_code}' \
+            https://api.anthropic.com/v1/messages \
+            -H "Authorization: Bearer $CLAUDE_CODE_OAUTH_TOKEN" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "anthropic-beta: oauth-2025-04-20" \
+            -H "content-type: application/json" \
+            -d '{"model":"claude-haiku-4-5","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}' )"
+          if [ "$status" != "200" ]; then
+            echo "::error::Subscription auth probe returned HTTP $status."
+            cat /tmp/auth-probe.json
+            exit 1
+          fi
+      - name: Run the Harbor eval gate in Modal
+        env:
+          HARBOR_MCP_REF: ${{ github.event.pull_request.head.sha || github.sha }}
+          EVALS_OUT_DIR: ${{ runner.temp }}/target-eval-trials
+          EVALS_UPLOAD: "1"
+        run: make evals
+      - name: Upload trials for diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: target-eval-trials
+          path: ${{ runner.temp }}/target-eval-trials
+          retention-days: 7
