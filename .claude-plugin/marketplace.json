@@ -40,6 +40,11 @@
       "name": "target",
       "source": "./plugins/target",
       "description": "Search Target products with store-scoped prices, find nearby pickup availability for selected items, price shopping lists, and plan practical store runs."
+    },
+    {
+      "name": "safeway",
+      "source": "./plugins/safeway",
+      "description": "Find nearby Safeway stores, search store-scoped groceries and prices, price shopping lists, and plan menus from website-backed catalog items."
     }
   ]
 }
