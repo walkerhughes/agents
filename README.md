@@ -13,6 +13,7 @@ Formerly `walkerhughes/mcps`, back when it only held MCP servers.
 | [`fred`](plugins/fred/) | The [FRED API](https://fred.stlouisfed.org/docs/api/fred/): the St. Louis Fed's economic time series, plus revision history and the release calendar (5 tools, and `/fred:auth` to store your key). | yes |
 | [`harbor-hub`](plugins/harbor-hub/) | The [Harbor](https://www.harborframework.com) hub: evaluation jobs, trials, uploads, and published packages. | yes |
 | [`tastytrade`](plugins/tastytrade/) | The [TastyTrade Open API](https://developer.tastytrade.com/getting-started/): brokerage account, market data, and order management (12 tools). | not yet |
+| [`trader-joes`](plugins/trader-joes/) | Trader Joe's public website: nearby stores, store-scoped products and prices, shopping lists, and menu planning (4 tools). | yes |
 
 They follow Honeycomb's [MCP, easy as 1-2-3](https://www.honeycomb.io/blog/mcp-easy-as-1-2-3) guidance: a few curated tools built around real questions rather than raw API endpoints, responses shaped for a model instead of a UI, and typed schemas that steer the model toward valid calls.
 
@@ -77,7 +78,8 @@ claude/
     ├── fred/
     ├── harbor-hub/
     ├── persona/
-    └── tastytrade/
+    ├── tastytrade/
+    └── trader-joes/
 ```
 
 Plugins live under `plugins/`, one directory each, named for the platform they talk to or the thing they do rather than for being an MCP server. A plugin is the unit Claude Code installs, so skills ship inside one too rather than as a loose directory.
