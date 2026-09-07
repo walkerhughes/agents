@@ -8,7 +8,7 @@ from rewardkit import criterion
 
 TRAJECTORY = Path("/logs/agent/trajectory.json")
 SESSIONS = Path("/logs/agent/sessions")
-EXPECTED_TOOLS = json.loads(r"""["mcp__costco__search_products"]""")
+EXPECTED_TOOLS = json.loads(r"""["mcp__costco__find_warehouses", "mcp__costco__price_shopping_list"]""")
 BYPASS = re.compile(r":8091\b|mock_server\.py|/opt/eval", re.IGNORECASE)
 
 

@@ -1,7 +1,8 @@
 # Costco agentic evals
 
-Four Harbor tasks cover warehouse discovery, product search, item-number lookup, and batch
-shopping-list pricing. Each task runs the MCP server and a deterministic local
+Eight Harbor tasks cover warehouse discovery, product search, item-number lookup,
+shopping-list pricing, a two-dinner Costco run, bulk package math, hidden-price
+handling, and alternative comparison. Each task runs the MCP server and a deterministic local
 stand-in for Costco's four public website endpoints inside one task-local
 environment. That layout runs with both Harbor's Docker and Modal providers.
 

@@ -77,26 +77,31 @@ def _agent_style(answer):
 def main() -> int:
     _stub_rewardkit()
     failures = []
+    process_cases = 0
     checkers = sorted(ROOT.glob("*/tests/process/check.py"))
     for path in checkers:
         module = _load(path)
-        tool = module.EXPECTED_TOOL
+        tools = module.EXPECTED_TOOLS
+        solved = [_call(tool) for tool in tools]
         agent = _trajectory(_call("Agent", prompt="delegate"))
         cases = [
-            ("solved", _trajectory(_call(tool)), [], (True, True)),
+            ("solved", _trajectory(*solved), [], (True, True)),
             ("empty", None, [], (False, False)),
             ("bypassed", _trajectory(_call("Bash", command="curl http://127.0.0.1:8091")), [], (False, False)),
             (
                 "fallback",
-                _trajectory(_call(tool), _call("Bash", command="curl http://localhost:8091")),
+                _trajectory(*solved, _call("Bash", command="curl http://localhost:8091")),
                 [],
                 (True, False),
             ),
-            ("delegated", agent, [_session(tool)], (True, True)),
+            ("delegated", agent, [_session(tool) for tool in tools], (True, True)),
             ("delegated-bypass", agent, [_session("Bash", command="python /opt/eval/mock_server.py")], (False, False)),
-            ("benign-shell", _trajectory(_call(tool), _call("Bash", command="pwd")), [], (True, True)),
+            ("benign-shell", _trajectory(*solved, _call("Bash", command="pwd")), [], (True, True)),
         ]
+        if len(tools) > 1:
+            cases.append(("partial", _trajectory(*solved[:-1]), [], (False, True)))
         for name, trajectory, sessions, expected in cases:
+            process_cases += 1
             actual = _score(module, trajectory, sessions)
             if actual != expected:
                 failures.append(f"{path.parents[2].name}/{name}: expected {expected}, got {actual}")
@@ -118,7 +123,7 @@ def main() -> int:
         print("\n".join(failures), file=sys.stderr)
         return 1
     print(
-        f"eval criteria ok: {len(checkers) * 7} process and "
+        f"eval criteria ok: {process_cases} process and "
         f"{len(outcome_checkers) * 4} outcome checks across {len(checkers)} evals"
     )
     return 0

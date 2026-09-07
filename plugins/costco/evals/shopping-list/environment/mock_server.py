@@ -34,6 +34,114 @@ RICE = {
     },
     "additionalFieldData": {"rating": "4.7", "numberOfRating": 212},
 }
+CHICKEN = {
+    "itemNumber": "1000001",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "4.99", "listPrice": "-1.00000"},
+    "attributes": [{"key": "Package Quantity", "value": "3 lb", "type": "string"}],
+    "description": {
+        "shortDescription": "Kirkland Signature Rotisserie Chicken, 3 lb",
+        "longDescription": "Prepared rotisserie chicken.",
+    },
+    "additionalFieldData": {},
+}
+TORTILLAS = {
+    "itemNumber": "1000002",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "7.99", "listPrice": "-1.00000"},
+    "attributes": [{"key": "Package Quantity", "value": "40 ct", "type": "string"}],
+    "description": {
+        "shortDescription": "Organic Flour Tortillas, 40 ct",
+        "longDescription": "Organic flour tortillas.",
+    },
+    "additionalFieldData": {},
+}
+CHEESE = {
+    "itemNumber": "1000003",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "11.49", "listPrice": "-1.00000"},
+    "attributes": [{"key": "Package Quantity", "value": "2.5 lb", "type": "string"}],
+    "description": {
+        "shortDescription": "Mexican Style Blend Shredded Cheese, 2.5 lb",
+        "longDescription": "Shredded Mexican-style cheese blend.",
+    },
+    "additionalFieldData": {},
+}
+SALAD = {
+    "itemNumber": "1000004",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "6.99", "listPrice": "-1.00000"},
+    "attributes": [{"key": "Package Quantity", "value": "24 oz", "type": "string"}],
+    "description": {
+        "shortDescription": "Organic Caesar Salad Kit, 24 oz",
+        "longDescription": "Caesar salad kit.",
+    },
+    "additionalFieldData": {},
+}
+PAPER_TOWELS = {
+    "itemNumber": "1000005",
+    "buyable": 1,
+    "programTypes": "InWarehouse,ShipIt",
+    "priceData": {"price": "23.99", "listPrice": "27.99"},
+    "attributes": [{"key": "Package Quantity", "value": "12 rolls", "type": "string"}],
+    "description": {
+        "shortDescription": "Kirkland Signature Paper Towels, 12 rolls",
+        "longDescription": "Two-ply paper towels.",
+    },
+    "additionalFieldData": {},
+}
+AVOCADOS = {
+    "itemNumber": "1000006",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "0.00000", "listPrice": "-1.00000"},
+    "attributes": [{"key": "Package Quantity", "value": "6 ct", "type": "string"}],
+    "description": {
+        "shortDescription": "Hass Avocados, 6 ct",
+        "longDescription": "Fresh Hass avocados.",
+    },
+    "additionalFieldData": {},
+}
+OLIVE_OIL_ORGANIC = {
+    "itemNumber": "2468100",
+    "buyable": 1,
+    "programTypes": "InWarehouse,ShipIt",
+    "priceData": {"price": "31.99", "listPrice": "34.99"},
+    "attributes": [{"key": "Package Quantity", "value": "2 L", "type": "string"}],
+    "description": {
+        "shortDescription": "Kirkland Signature Organic Extra Virgin Olive Oil, 2 L",
+        "longDescription": "Organic extra virgin olive oil.",
+    },
+    "additionalFieldData": {},
+}
+OLIVE_OIL = {
+    "itemNumber": "2468101",
+    "buyable": 1,
+    "programTypes": "InWarehouse",
+    "priceData": {"price": "24.99", "listPrice": "29.99"},
+    "attributes": [{"key": "Package Quantity", "value": "2 L", "type": "string"}],
+    "description": {
+        "shortDescription": "Kirkland Signature Extra Virgin Olive Oil, 2 L",
+        "longDescription": "Extra virgin olive oil.",
+    },
+    "additionalFieldData": {},
+}
+PRODUCTS = [
+    QUINOA,
+    RICE,
+    CHICKEN,
+    TORTILLAS,
+    CHEESE,
+    SALAD,
+    PAPER_TOWELS,
+    AVOCADOS,
+    OLIVE_OIL_ORGANIC,
+    OLIVE_OIL,
+]
 WAREHOUSE = {
     "salesLocationId": 144,
     "name": [{"localeCode": "en-US", "value": "South San Francisco"}],
@@ -73,11 +181,28 @@ class Handler(BaseHTTPRequestHandler):
         request = json.loads(self.rfile.read(size) or b"{}")
         if self.path == "/search":
             query = str(request.get("query") or "").lower()
-            item = RICE if "rice" in query else QUINOA
+            if "rice" in query:
+                matches = [RICE]
+            elif "chicken" in query:
+                matches = [CHICKEN]
+            elif "tortilla" in query:
+                matches = [TORTILLAS]
+            elif "cheese" in query:
+                matches = [CHEESE]
+            elif "salad" in query:
+                matches = [SALAD]
+            elif "paper towel" in query:
+                matches = [PAPER_TOWELS]
+            elif "avocado" in query:
+                matches = [AVOCADOS]
+            elif "olive oil" in query:
+                matches = [OLIVE_OIL_ORGANIC, OLIVE_OIL]
+            else:
+                matches = [QUINOA]
             self._send(
                 {
                     "searchResult": {
-                        "totalCount": 1,
+                        "totalCount": len(matches),
                         "results": [
                             {
                                 "id": item["itemNumber"],
@@ -88,6 +213,7 @@ class Handler(BaseHTTPRequestHandler):
                                     "attributes": {},
                                 },
                             }
+                            for item in matches
                         ],
                     }
                 }
@@ -95,11 +221,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         if self.path == "/graphql":
             query = str(request.get("query") or "")
-            items = []
-            if QUINOA["itemNumber"] in query:
-                items.append(QUINOA)
-            if RICE["itemNumber"] in query:
-                items.append(RICE)
+            items = [item for item in PRODUCTS if item["itemNumber"] in query]
             self._send({"data": {"products": {"catalogData": items}}})
             return
         self.send_error(404)
