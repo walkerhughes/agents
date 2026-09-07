@@ -25,6 +25,11 @@
       "name": "tastytrade",
       "source": "./plugins/tastytrade",
       "description": "Inspect TastyTrade brokerage accounts, positions, market data, option chains, and transactions from Claude Code. Order placement is gated off by default."
+    },
+    {
+      "name": "trader-joes",
+      "source": "./plugins/trader-joes",
+      "description": "Find nearby Trader Joe's stores, search store-scoped products and published prices, price shopping lists, and plan menus from website-backed catalog items."
     }
   ]
 }
