@@ -15,6 +15,7 @@ Formerly `walkerhughes/mcps`, back when it only held MCP servers.
 | [`costco`](plugins/costco/) | Costco's public website: nearby warehouses, warehouse-context products and public prices, shopping lists, and bulk-friendly menu planning (4 tools). | yes |
 | [`tastytrade`](plugins/tastytrade/) | The [TastyTrade Open API](https://developer.tastytrade.com/getting-started/): brokerage account, market data, and order management (12 tools). | not yet |
 | [`trader-joes`](plugins/trader-joes/) | Trader Joe's public website: nearby stores, store-scoped products and prices, shopping lists, and menu planning (4 tools). | yes |
+| [`target`](plugins/target/) | Target's public website: store-scoped products and prices, product-aware nearby availability, shopping lists, and trip planning (4 tools). | yes |
 
 They follow Honeycomb's [MCP, easy as 1-2-3](https://www.honeycomb.io/blog/mcp-easy-as-1-2-3) guidance: a few curated tools built around real questions rather than raw API endpoints, responses shaped for a model instead of a UI, and typed schemas that steer the model toward valid calls.
 
@@ -81,6 +82,7 @@ claude/
     ├── costco/
     ├── persona/
     ├── tastytrade/
+    ├── target/
     └── trader-joes/
 ```
 

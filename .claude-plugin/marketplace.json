@@ -35,6 +35,11 @@
       "name": "costco",
       "source": "./plugins/costco",
       "description": "Find nearby Costco warehouses, search warehouse-context products and public Costco.com prices, price shopping lists, and plan bulk-friendly menus."
+    },
+    {
+      "name": "target",
+      "source": "./plugins/target",
+      "description": "Search Target products with store-scoped prices, find nearby pickup availability for selected items, price shopping lists, and plan practical store runs."
     }
   ]
 }
