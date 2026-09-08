@@ -1,6 +1,6 @@
-.PHONY: check lint format typecheck test coverage selftest
+.PHONY: check lint format typecheck test coverage selftest validate-process evals
 
-check: lint typecheck selftest test
+check: lint typecheck selftest validate-process test
 
 lint:
 	uv run ruff check .
@@ -15,6 +15,13 @@ typecheck:
 
 selftest:
 	uv run python -c "from src.server import mcp; assert len(mcp._tool_manager._tools) == 4"
+	uv run python evals/check_reward.py --selftest
+
+validate-process:
+	uv run python evals/validate_process_local.py
+
+evals:
+	uv run bash evals/run_evals.sh
 
 test:
 	uv run pytest -m unit

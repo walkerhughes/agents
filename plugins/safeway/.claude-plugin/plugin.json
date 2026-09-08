@@ -1,6 +1,6 @@
 {
   "name": "safeway",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Find Safeway stores, search store-scoped groceries and prices, and build shopping lists and menus.",
   "author": {"name": "Walker Hughes", "url": "https://github.com/walkerhughes"},
   "license": "MIT",
