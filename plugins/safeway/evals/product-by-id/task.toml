@@ -1,0 +1,31 @@
+schema_version = "1.1"
+
+[task]
+name = "safeway/product-by-id"
+description = "Refresh a Safeway product by ID in one store context."
+authors = []
+keywords = ["mcp", "safeway", "eval"]
+
+[metadata]
+category = "mcp"
+difficulty = "easy"
+
+[agent]
+timeout_sec = 300.0
+
+[verifier]
+timeout_sec = 60.0
+
+[environment]
+build_timeout_sec = 900.0
+cpus = 1
+memory_mb = 2048
+storage_mb = 10240
+gpus = 0
+network_mode = "public"
+
+[[environment.mcp_servers]]
+name = "safeway"
+transport = "stdio"
+command = "/opt/eval/start-mcp"
+args = []

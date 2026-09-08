@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+
+python /opt/eval/mock_server.py >/tmp/safeway-mock.log 2>&1 &
+mock_pid=$!
+trap 'kill "$mock_pid" 2>/dev/null || true' EXIT INT TERM
+
+for attempt in $(seq 1 50); do
+    if curl -sf http://127.0.0.1:8091/health >/dev/null; then
+        cd /opt/claude/plugins/safeway
+        exec uv run --no-dev python -m src.server
+    fi
+    sleep 0.1
+done
+
+cat /tmp/safeway-mock.log >&2
+exit 1
