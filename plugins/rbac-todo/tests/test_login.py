@@ -4,6 +4,7 @@ import contextlib
 import io
 import json
 import os
+import pty
 import runpy
 from pathlib import Path
 from unittest.mock import patch
@@ -11,15 +12,29 @@ from unittest.mock import patch
 script = Path(__file__).resolve().parents[1] / "scripts" / "login.py"
 output = io.StringIO()
 response = io.BytesIO(json.dumps({"access_token": "test-jwt"}).encode())
+master, slave = pty.openpty()
+terminal_path = os.ttyname(slave)
+real_open = open
+os.write(master, b"user@example.com\n")
+
+
+def open_terminal(path, *args, **kwargs):
+    kwargs["opener"] = lambda name, flags: os.open(name, flags | os.O_NOCTTY)
+    return real_open(terminal_path if path == "/dev/tty" else path, *args, **kwargs)
+
+
 with (
     patch.dict(os.environ, {"SUPABASE_ANON_KEY": "test-key"}, clear=True),
-    patch("builtins.open") as tty,
+    patch("builtins.open", side_effect=open_terminal),
     patch("getpass.getpass", return_value="secret-password"),
     patch("urllib.request.urlopen", return_value=response) as urlopen,
     contextlib.redirect_stdout(output),
 ):
-    tty.return_value.__enter__.return_value.readline.return_value = "user@example.com\n"
-    runpy.run_path(str(script), run_name="__main__")
+    try:
+        runpy.run_path(str(script), run_name="__main__")
+    finally:
+        os.close(master)
+        os.close(slave)
     request = urlopen.call_args.args[0]
     assert json.loads(request.data) == {"email": "user@example.com", "password": "secret-password"}
     assert request.headers["Apikey"] == "test-key"

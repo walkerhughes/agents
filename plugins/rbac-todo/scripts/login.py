@@ -11,9 +11,9 @@ project_ref = os.environ.get("SUPABASE_PROJECT_REF", "tteazpolsuwfxqqqksoj")
 key = os.environ.get("SUPABASE_ANON_KEY")
 if not key:
     sys.exit("Set SUPABASE_ANON_KEY to the project's anon key.")
-with open("/dev/tty", "r+") as terminal:
-    terminal.write("Email: ")
-    terminal.flush()
+with open("/dev/tty", "w") as prompt:
+    prompt.write("Email: ")
+with open("/dev/tty") as terminal:
     email = terminal.readline().strip()
 password = getpass.getpass("Password: ")
 request = urllib.request.Request(
