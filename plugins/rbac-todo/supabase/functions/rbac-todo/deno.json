@@ -1,0 +1,12 @@
+{
+  "compilerOptions": { "strict": true },
+  "imports": {
+    "mcp-lite": "npm:mcp-lite@0.8.2",
+    "zod": "npm:zod@4.1.12",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.116.0"
+  },
+  "tasks": {
+    "check": "deno fmt --check . ../../tests && deno lint . ../../tests && deno check index.ts ../../tests/e2e.ts",
+    "test": "deno run --allow-env --allow-net ../../tests/e2e.ts"
+  }
+}

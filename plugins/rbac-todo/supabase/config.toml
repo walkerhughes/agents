@@ -1,0 +1,6 @@
+project_id = "supabase-demo"
+
+[functions.rbac-todo]
+# The handler validates user tokens with Supabase Auth, including asymmetric JWTs.
+verify_jwt = false
+entrypoint = "./functions/rbac-todo/index.ts"

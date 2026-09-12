@@ -12,6 +12,7 @@ Formerly `walkerhughes/mcps`, back when it only held MCP servers.
 |--------|---------------------|--------|
 | [`fred`](plugins/fred/) | The [FRED API](https://fred.stlouisfed.org/docs/api/fred/): the St. Louis Fed's economic time series, plus revision history and the release calendar (5 tools, and `/fred:auth` to store your key). | yes |
 | [`harbor-hub`](plugins/harbor-hub/) | The [Harbor](https://www.harborframework.com) hub: evaluation jobs, trials, uploads, and published packages. | yes |
+| [`rbac-todo`](plugins/rbac-todo/) | A shared Supabase Postgres to-do list with admin writes and member reads, served by an Edge Function using mcp-lite. | yes |
 | [`tastytrade`](plugins/tastytrade/) | The [TastyTrade Open API](https://developer.tastytrade.com/getting-started/): brokerage account, market data, and order management (12 tools). | not yet |
 
 They follow Honeycomb's [MCP, easy as 1-2-3](https://www.honeycomb.io/blog/mcp-easy-as-1-2-3) guidance: a few curated tools built around real questions rather than raw API endpoints, responses shaped for a model instead of a UI, and typed schemas that steer the model toward valid calls.

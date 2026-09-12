@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "rbac-todo": {
+      "type": "http",
+      "url": "https://tteazpolsuwfxqqqksoj.supabase.co/functions/v1/rbac-todo/mcp",
+      "headers": {
+        "Authorization": "Bearer ${RBAC_TODO_ACCESS_TOKEN}"
+      }
+    }
+  }
+}

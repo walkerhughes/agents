@@ -1,0 +1,18 @@
+{
+  "name": "rbac-todo",
+  "version": "0.1.0",
+  "description": "A shared Supabase to-do list with admin writes and member reads.",
+  "author": {
+    "name": "Walker Hughes"
+  },
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "RBAC To-do",
+    "shortDescription": "A shared to-do list with role-based access.",
+    "longDescription": "Read shared to-dos as a member. Add, update and delete them as an admin. Stored in Supabase Postgres with row level security.",
+    "developerName": "Walker Hughes",
+    "category": "Productivity",
+    "capabilities": ["mcp"],
+    "defaultPrompt": "Show my to-do list."
+  }
+}

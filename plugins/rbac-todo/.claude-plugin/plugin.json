@@ -1,0 +1,10 @@
+{
+  "name": "rbac-todo",
+  "version": "0.1.0",
+  "description": "A shared to-do list stored in Supabase Postgres, with admin writes and member reads enforced by row level security.",
+  "author": { "name": "Walker Hughes" },
+  "license": "MIT",
+  "homepage": "https://github.com/walkerhughes/agents/tree/main/plugins/rbac-todo",
+  "repository": "https://github.com/walkerhughes/agents",
+  "keywords": ["supabase", "postgres", "rbac", "todo", "mcp"]
+}
