@@ -1,6 +1,6 @@
 {
   "name": "rbac-todo",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A shared to-do list stored in Supabase Postgres, with admin writes and member reads enforced by row level security.",
   "author": { "name": "Walker Hughes" },
   "license": "MIT",

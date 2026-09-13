@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "rbac-todo": {
+      "url": "https://tteazpolsuwfxqqqksoj.supabase.co/functions/v1/rbac-todo/mcp",
+      "bearer_token_env_var": "RBAC_TODO_ACCESS_TOKEN"
+    }
+  }
+}

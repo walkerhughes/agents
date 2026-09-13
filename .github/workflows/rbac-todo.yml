@@ -28,6 +28,7 @@ jobs:
       - run: deno task --config supabase/functions/rbac-todo/deno.json check
       - run: uvx ruff check scripts tests && uvx ruff format --check scripts tests
       - run: python3 tests/test_login.py
+      - run: python3 tests/test_mcp_config.py
 
   # Explicitly run against the deployed demo; PR code never receives project credentials.
   live:

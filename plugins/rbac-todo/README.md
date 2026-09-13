@@ -54,7 +54,21 @@ claude --plugin-dir ./plugins/rbac-todo
 
 After this plugin is published to the repo marketplace, install with
 `claude plugin install rbac-todo@walkerhughes` and restart Claude Code.
-The plugin includes both Claude and Codex manifests and `.mcp.json`.
+For Codex, register this checkout and install the plugin:
+
+```bash
+codex plugin marketplace add ../..
+codex plugin add rbac-todo@rbac-todo-dev
+codex
+```
+
+Run `codex` from the same shell where `RBAC_TODO_ACCESS_TOKEN` is exported.
+Start a new session after installation or an update. To check the installed
+configuration, run `codex mcp get rbac-todo`; its `bearer_token_env_var` should
+be `RBAC_TODO_ACCESS_TOKEN`.
+
+Claude uses `.mcp.json`; Codex uses `.mcp.codex.json` with its native
+`bearer_token_env_var` field. Codex ignores Claude's `headers` field.
 Other clients can use the endpoint with an `Authorization: Bearer <user JWT>`
 header. Browser origins are rejected; use a native MCP client.
 
