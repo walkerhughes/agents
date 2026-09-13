@@ -24,7 +24,22 @@ function result(
 }
 
 Deno.serve(async (request) => {
+  const projectUrl = Deno.env.get("SUPABASE_URL")!;
+  const resource = `${projectUrl}/functions/v1/rbac-todo/mcp`;
+  const metadata =
+    `${projectUrl}/functions/v1/rbac-todo/.well-known/oauth-protected-resource`;
   const pathname = new URL(request.url).pathname;
+  if (
+    /^\/(?:functions\/v1\/)?rbac-todo\/\.well-known\/oauth-protected-resource$/
+      .test(pathname)
+  ) {
+    return Response.json({
+      resource,
+      authorization_servers: [`${projectUrl}/auth/v1`],
+      scopes_supported: ["openid", "email", "profile", "offline_access"],
+      bearer_methods_supported: ["header"],
+    }, { headers: { "Access-Control-Allow-Origin": "*" } });
+  }
   if (!/^\/(?:functions\/v1\/)?rbac-todo\/mcp\/?$/.test(pathname)) {
     return new Response("Not found", { status: 404 });
   }
@@ -36,7 +51,7 @@ Deno.serve(async (request) => {
   if (!/^Bearer \S+$/i.test(authorization)) {
     return new Response("A Supabase Auth access token is required", {
       status: 401,
-      headers: { "WWW-Authenticate": "Bearer" },
+      headers: { "WWW-Authenticate": `Bearer resource_metadata="${metadata}"` },
     });
   }
 
@@ -55,7 +70,10 @@ Deno.serve(async (request) => {
   if (authError || !user) {
     return new Response("Invalid or expired access token", {
       status: 401,
-      headers: { "WWW-Authenticate": 'Bearer error="invalid_token"' },
+      headers: {
+        "WWW-Authenticate":
+          `Bearer error="invalid_token", resource_metadata="${metadata}"`,
+      },
     });
   }
   const { data: membership, error } = await db.from("todo_members")
@@ -65,12 +83,12 @@ Deno.serve(async (request) => {
 
   const mcp = new McpServer({
     name: "rbac-todo",
-    version: "1.0.0",
+    version: "0.2.0",
     schemaAdapter: (schema) => z.toJSONSchema(schema as z.ZodType),
   });
   mcp.tool("list_todos", {
     description:
-      "Read the shared to-do list, newest first. Available to members and admins. Use offset to fetch the next page.",
+      "Read your private to-do list, newest first. Use offset to fetch the next page.",
     inputSchema: z.object({
       completed: z.boolean().optional(),
       limit: z.number().int().min(1).max(100).default(50),
@@ -78,6 +96,7 @@ Deno.serve(async (request) => {
     }),
     handler: async ({ completed, limit, offset }) => {
       let query = db.from("todos").select("id,title,completed,created_at")
+        .eq("user_id", user.id)
         .order("created_at", { ascending: false })
         .order("id", { ascending: false }).range(offset, offset + limit - 1);
       if (completed !== undefined) query = query.eq("completed", completed);
@@ -86,7 +105,7 @@ Deno.serve(async (request) => {
     },
   });
   mcp.tool("add_todo", {
-    description: "Add a to-do to the shared list. Admin only.",
+    description: "Add a to-do to your private list. Admin only.",
     inputSchema: z.object({ title }),
     handler: async ({ title }) => {
       const { data, error } = await db.from("todos").insert({ title }).select()
@@ -111,7 +130,7 @@ Deno.serve(async (request) => {
       const { data, error } = await db.from("todos").update(changes).eq(
         "id",
         id,
-      )
+      ).eq("user_id", user.id)
         .select().single();
       return result(data, error);
     },
@@ -121,6 +140,7 @@ Deno.serve(async (request) => {
     inputSchema: z.object({ id }),
     handler: async ({ id }) => {
       const { data, error } = await db.from("todos").delete().eq("id", id)
+        .eq("user_id", user.id)
         .select("id").single();
       return result(data, error);
     },

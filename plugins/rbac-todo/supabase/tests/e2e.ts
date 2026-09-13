@@ -82,42 +82,67 @@ async function call(token: string, name: string, args: unknown, fails = false) {
 }
 
 const users: string[] = [];
-let todoId: string | undefined;
+const tokens: Record<string, string> = {};
 const marker = `rbac-todo-e2e-${crypto.randomUUID()}`;
 try {
-  const tokens: Record<string, string> = {};
-  for (const role of ["admin", "member", "outsider"]) {
+  for (const role of ["admin", "other", "member", "outsider"]) {
     const email = `${marker}-${role}@example.com`;
     const password = crypto.randomUUID();
     const created = await api("/auth/v1/admin/users", service, "POST", {
       email,
       password,
       email_confirm: true,
-      // User-editable metadata must never grant privileges.
       user_metadata: { role: "admin" },
     });
-    assert.equal(created.status, 200, `Create ${role}`);
-    users.push(created.data.id);
-    if (role !== "outsider") {
-      const assigned = await api("/rest/v1/todo_members", service, "POST", {
-        user_id: created.data.id,
-        role,
-      });
-      assert.equal(assigned.status, 201, `Assign ${role}`);
+    assert.equal(created.status, 200);
+    const userId = created.data.id;
+    users.push(userId);
+    const membership = await api(
+      `/rest/v1/todo_members?user_id=eq.${userId}`,
+      service,
+    );
+    assert.equal(
+      membership.data[0].role,
+      "admin",
+      "New users automatically own an admin membership",
+    );
+    if (role === "member") {
+      assert.equal(
+        (await api(
+          `/rest/v1/todo_members?user_id=eq.${userId}`,
+          service,
+          "PATCH",
+          { role },
+        )).status,
+        200,
+      );
+      assert.equal(
+        (await api("/rest/v1/todos", service, "POST", {
+          title: marker,
+          user_id: userId,
+        })).status,
+        201,
+      );
+    }
+    if (role === "outsider") {
+      assert.equal(
+        (await api(
+          `/rest/v1/todo_members?user_id=eq.${userId}`,
+          service,
+          "DELETE",
+        )).status,
+        200,
+      );
     }
     const login = await api(
       "/auth/v1/token?grant_type=password",
       anon,
       "POST",
-      {
-        email,
-        password,
-      },
+      { email, password },
     );
-    assert.equal(login.status, 200, `Sign in ${role}`);
+    assert.equal(login.status, 200);
     tokens[role] = login.data.access_token;
   }
-
   for (
     const [token, expected] of [["", 401], ["invalid", 401], [
       tokens.outsider,
@@ -129,146 +154,156 @@ try {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
     await response.text();
-    assert.equal(response.status, expected, "Reject unauthorized client");
+    assert.equal(response.status, expected);
+    if (!token) {
+      assert(
+        response.headers.get("www-authenticate")?.includes(
+          "resource_metadata=",
+        ),
+      );
+    }
   }
+  const metadata = await fetch(
+    `${url}/functions/v1/rbac-todo/.well-known/oauth-protected-resource`,
+  );
+  const advertised = await metadata.json();
+  assert.equal(advertised.resource, endpoint);
+  assert(advertised.scopes_supported.includes("offline_access"));
+  const init = await rpc(tokens.admin, "initialize", {
+    protocolVersion: "2025-06-18",
+    capabilities: {},
+    clientInfo: { name: "e2e", version: "1" },
+  });
+  assert.equal(init.result.serverInfo.name, "rbac-todo");
+  const tools = await rpc(tokens.admin, "tools/list", {});
+  assert.equal(tools.result.tools.length, 4);
   const browser = await fetch(endpoint, {
-    method: "POST",
     headers: {
-      Authorization: `Bearer ${tokens.admin}`,
       Origin: "https://evil.example",
+      Authorization: `Bearer ${tokens.admin}`,
     },
   });
   await browser.text();
-  assert.equal(browser.status, 403, "Reject unexpected browser origin");
-  for (const role of ["admin", "member"]) {
-    const init = await rpc(tokens[role], "initialize", {
-      protocolVersion: "2025-06-18",
-      capabilities: {},
-      clientInfo: { name: "e2e", version: "1" },
-    });
-    assert.equal(init.result.serverInfo.name, "rbac-todo");
-    const list = await rpc(tokens[role], "tools/list", {});
-    assert.deepEqual(
-      list.result.tools.map((tool: { name: string }) => tool.name).sort(),
-      ["add_todo", "delete_todo", "list_todos", "update_todo"],
-    );
-  }
-  console.log("PASS: authentication and MCP discovery");
+  assert.equal(browser.status, 403);
+  console.log(
+    "PASS: signup role, authentication, OAuth discovery and MCP discovery",
+  );
 
-  const added = await call(tokens.admin, "add_todo", { title: marker });
-  todoId = added.id;
-  assert.equal(added.completed, false);
-  const stored = await api(`/rest/v1/todos?id=eq.${todoId}`, tokens.member);
-  assert.equal(stored.data[0].title, marker, "MCP write persisted in Postgres");
-  const listed = await call(tokens.member, "list_todos", { limit: 100 });
-  assert(listed.some((todo: { id: string }) => todo.id === todoId));
-  for (const token of [tokens.member, tokens.outsider]) {
-    const inserted = await api("/rest/v1/todos", token, "POST", {
-      title: marker,
-    });
-    assert.equal(inserted.status, 403, "RLS denies direct insert");
+  const todo = await call(tokens.admin, "add_todo", { title: marker });
+  const own = await api(`/rest/v1/todos?id=eq.${todo.id}`, tokens.admin);
+  assert.equal(own.data[0].user_id, users[0]);
+  for (const role of ["other", "member", "outsider"]) {
+    const hidden = await api(`/rest/v1/todos?id=eq.${todo.id}`, tokens[role]);
+    assert.deepEqual(hidden.data, []);
     for (const method of ["PATCH", "DELETE"]) {
       const denied = await api(
-        `/rest/v1/todos?id=eq.${todoId}`,
-        token,
+        `/rest/v1/todos?id=eq.${todo.id}`,
+        tokens[role],
         method,
         method === "PATCH" ? { completed: true } : undefined,
       );
       assert.equal(denied.status, 200);
-      assert.deepEqual(denied.data, [], `RLS filters direct ${method}`);
+      assert.deepEqual(denied.data, []);
     }
+    const forged = await api("/rest/v1/todos", tokens[role], "POST", {
+      title: marker,
+      user_id: users[0],
+    });
+    assert.equal(forged.status, 403);
     const promoted = await api(
-      `/rest/v1/todo_members?user_id=eq.${users[1]}`,
-      token,
+      `/rest/v1/todo_members?user_id=eq.${users[2]}`,
+      tokens[role],
       "PATCH",
       { role: "admin" },
     );
-    assert.equal(promoted.status, 403, "No self-promotion");
-    const enrollment = await api("/rest/v1/todo_members", token, "POST", {
-      user_id: users[2],
-      role: "admin",
-    });
-    assert.equal(enrollment.status, 403, "No self-enrollment");
+    assert.equal(promoted.status, 403);
   }
-  const hidden = await api(`/rest/v1/todos?id=eq.${todoId}`, tokens.outsider);
-  assert.deepEqual(hidden.data, [], "Unassigned user cannot read");
-  const anonymous = await api("/rest/v1/todos", anon);
-  assert.equal(anonymous.status, 401, "Anonymous REST denied");
+  const transferred = await api(
+    `/rest/v1/todos?id=eq.${todo.id}`,
+    tokens.admin,
+    "PATCH",
+    { user_id: users[1] },
+  );
+  assert.equal(transferred.status, 403, "Owners cannot transfer records");
+  assert.equal((await api("/rest/v1/todos", anon)).status, 401);
+  assert.deepEqual(await call(tokens.other, "list_todos", {}), []);
+  const memberTodos = await call(tokens.member, "list_todos", {});
+  assert.equal(memberTodos.length, 1);
+  assert.notEqual(memberTodos[0].id, todo.id);
   await call(tokens.member, "add_todo", { title: marker }, true);
+  await call(tokens.member, "update_todo", {
+    id: memberTodos[0].id,
+    completed: true,
+  }, true);
+  await call(tokens.member, "delete_todo", { id: memberTodos[0].id }, true);
   await call(
-    tokens.member,
+    tokens.other,
     "update_todo",
-    { id: todoId, completed: true },
+    { id: todo.id, completed: true },
     true,
   );
-  await call(tokens.member, "delete_todo", { id: todoId }, true);
-  await call(tokens.admin, "add_todo", { title: "   " }, true);
-  await call(tokens.admin, "update_todo", { id: todoId }, true);
+  await call(tokens.other, "delete_todo", { id: todo.id }, true);
+  await call(tokens.admin, "add_todo", { title: "  " }, true);
+  await call(tokens.admin, "update_todo", { id: todo.id }, true);
   await call(tokens.admin, "delete_todo", { id: "invalid" }, true);
   console.log(
-    "PASS: RLS, member write denial, metadata spoofing and input validation",
+    "PASS: two-user isolation, own-row member reads, member write denial and forged ownership",
   );
 
-  const updated = await call(tokens.admin, "update_todo", {
-    id: todoId,
-    completed: true,
-    title: `${marker}-updated`,
-  });
-  assert.equal(updated.completed, true);
-  const persisted = await api(`/rest/v1/todos?id=eq.${todoId}`, tokens.member);
-  assert.equal(persisted.data[0].title, `${marker}-updated`);
-  const filtered = await call(tokens.member, "list_todos", {
-    completed: false,
-  });
-  assert(!filtered.some((todo: { id: string }) => todo.id === todoId));
-
-  const demoted = await api(
-    `/rest/v1/todo_members?user_id=eq.${users[0]}`,
-    service,
-    "PATCH",
-    { role: "member" },
-  );
-  assert.equal(demoted.status, 200);
-  await call(
-    tokens.admin,
-    "update_todo",
-    { id: todoId, completed: false },
+  await call(tokens.admin, "update_todo", { id: todo.id, completed: true });
+  assert.equal(
+    (await api(`/rest/v1/todos?id=eq.${todo.id}`, tokens.admin)).data[0]
+      .completed,
     true,
   );
-  const restored = await api(
-    `/rest/v1/todo_members?user_id=eq.${users[0]}`,
-    service,
-    "PATCH",
-    { role: "admin" },
+  assert.deepEqual(
+    await call(tokens.admin, "list_todos", { completed: false }),
+    [],
   );
-  assert.equal(restored.status, 200);
-  await call(tokens.admin, "delete_todo", { id: todoId });
-  const deleted = await api(`/rest/v1/todos?id=eq.${todoId}`, tokens.member);
-  assert.deepEqual(deleted.data, []);
-  await call(
-    tokens.admin,
-    "update_todo",
-    { id: todoId, completed: true },
-    true,
+  assert.equal(
+    (await call(tokens.admin, "list_todos", { completed: true, limit: 1 }))
+      .length,
+    1,
+  );
+  assert.equal(
+    (await api(
+      `/rest/v1/todo_members?user_id=eq.${users[0]}`,
+      service,
+      "PATCH",
+      { role: "member" },
+    )).status,
+    200,
+  );
+  await call(tokens.admin, "delete_todo", { id: todo.id }, true);
+  assert.equal(
+    (await api(
+      `/rest/v1/todo_members?user_id=eq.${users[0]}`,
+      service,
+      "PATCH",
+      { role: "admin" },
+    )).status,
+    200,
+  );
+  await call(tokens.admin, "delete_todo", { id: todo.id });
+  assert.deepEqual(
+    (await api(`/rest/v1/todos?id=eq.${todo.id}`, tokens.admin)).data,
+    [],
   );
   console.log(
-    "PASS: admin CRUD, persistence, filtering and immediate role demotion",
+    "PASS: own-row CRUD persistence, filtering and immediate role demotion",
   );
 } finally {
-  // Scope cleanup to this run, including writes that unexpectedly bypassed RLS.
-  const removed = await api(
-    `/rest/v1/todos?title=like.${marker}*`,
-    service,
-    "DELETE",
-  );
-  assert.equal(removed.status, 200, "Clean up test todos");
   for (const user of users) {
     const removed = await api(
       `/auth/v1/admin/users/${user}`,
       service,
       "DELETE",
     );
-    assert.equal(removed.status, 200, "Clean up test user");
+    assert.equal(
+      removed.status,
+      200,
+      "Remove test user and cascade-delete owned data",
+    );
   }
-  console.log("Temporary users and test todos removed");
+  console.log("Temporary users and their todos removed");
 }

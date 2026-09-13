@@ -24,7 +24,7 @@
     {
       "name": "rbac-todo",
       "source": "./plugins/rbac-todo",
-      "description": "A shared Supabase Postgres to-do list: admins can write, members can read, enforced by row level security."
+      "description": "Personal Supabase to-dos with browser sign-in, admin writes and member reads enforced by row level security."
     },
     {
       "name": "tastytrade",
