@@ -30,6 +30,26 @@
       "name": "tastytrade",
       "source": "./plugins/tastytrade",
       "description": "Inspect TastyTrade brokerage accounts, positions, market data, option chains, and transactions from Claude Code. Order placement is gated off by default."
+    },
+    {
+      "name": "trader-joes",
+      "source": "./plugins/trader-joes",
+      "description": "Find nearby Trader Joe's stores, search store-scoped products and published prices, price shopping lists, and plan menus from website-backed catalog items."
+    },
+    {
+      "name": "costco",
+      "source": "./plugins/costco",
+      "description": "Find nearby Costco warehouses, search warehouse-context products and public Costco.com prices, price shopping lists, and plan bulk-friendly menus."
+    },
+    {
+      "name": "target",
+      "source": "./plugins/target",
+      "description": "Search Target products with store-scoped prices, find nearby pickup availability for selected items, price shopping lists, and plan practical store runs."
+    },
+    {
+      "name": "safeway",
+      "source": "./plugins/safeway",
+      "description": "Find nearby Safeway stores, search store-scoped groceries and prices, price shopping lists, and plan menus from website-backed catalog items."
     }
   ]
 }
