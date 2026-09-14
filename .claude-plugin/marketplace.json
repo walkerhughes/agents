@@ -22,6 +22,11 @@
       "description": "Write in your own voice. Ships a plain-language style skill, plus a local labeling loop that learns your voice from your own transcripts and builds a translation skill from it. Everything stays on your machine."
     },
     {
+      "name": "rbac-todo",
+      "source": "./plugins/rbac-todo",
+      "description": "Personal Supabase to-dos with browser sign-in, admin writes and member reads enforced by row level security."
+    },
+    {
       "name": "tastytrade",
       "source": "./plugins/tastytrade",
       "description": "Inspect TastyTrade brokerage accounts, positions, market data, option chains, and transactions from Claude Code. Order placement is gated off by default."

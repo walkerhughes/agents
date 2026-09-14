@@ -1,0 +1,70 @@
+name: rbac-todo
+
+on:
+  pull_request:
+    paths:
+      - "plugins/rbac-todo/**"
+      - ".github/workflows/rbac-todo.yml"
+  push:
+    branches: [main]
+    paths:
+      - "plugins/rbac-todo/**"
+      - ".github/workflows/rbac-todo.yml"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: plugins/rbac-todo
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.6
+      - uses: astral-sh/setup-uv@v5
+      - run: deno task --config supabase/functions/rbac-todo/deno.json check
+      - run: uvx ruff check tests && uvx ruff format --check tests
+      - run: python3 tests/test_mcp_config.py
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: plugins/rbac-todo/web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: plugins/rbac-todo/web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: |
+          npm run dev > /tmp/rbac-todo-web.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://localhost:3000/ > /dev/null; then break; fi
+            sleep 1
+          done
+          npx playwright test --grep 'desktop and mobile'
+
+  # Explicitly run against the deployed demo; PR code never receives project credentials.
+  live:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: check
+    runs-on: ubuntu-latest
+    environment: rbac-todo-demo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.6
+      - run: deno task --config supabase/functions/rbac-todo/deno.json test
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: tteazpolsuwfxqqqksoj

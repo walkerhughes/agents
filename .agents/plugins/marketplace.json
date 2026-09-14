@@ -1,0 +1,17 @@
+{
+  "name": "rbac-todo-dev",
+  "plugins": [
+    {
+      "name": "rbac-todo",
+      "source": {
+        "source": "local",
+        "path": "./plugins/rbac-todo"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_USE"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

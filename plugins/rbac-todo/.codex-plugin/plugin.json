@@ -1,0 +1,20 @@
+{
+  "name": "rbac-todo",
+  "version": "0.2.0",
+  "description": "Personal Supabase to-dos with browser sign-in, admin writes and member reads.",
+  "author": {
+    "name": "Walker Hughes"
+  },
+  "mcpServers": "./.mcp.codex.json",
+  "interface": {
+    "displayName": "RBAC To-do",
+    "shortDescription": "Your private to-do list, with browser sign-in.",
+    "longDescription": "Sign in or create an account to manage your personal to-dos. Supabase Postgres enforces ownership and admin writes; members can read their own todos.",
+    "developerName": "Walker Hughes",
+    "category": "Productivity",
+    "capabilities": [
+      "mcp"
+    ],
+    "defaultPrompt": "Show my to-do list."
+  }
+}
