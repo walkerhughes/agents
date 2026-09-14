@@ -1,0 +1,31 @@
+schema_version = "1.1"
+
+[task]
+name = "costco/bulk-package-math"
+description = "Convert a household quantity into Costco packages and extended cost."
+authors = []
+keywords = ["mcp", "costco", "eval"]
+
+[metadata]
+category = "mcp"
+difficulty = "easy"
+
+[agent]
+timeout_sec = 300.0
+
+[verifier]
+timeout_sec = 60.0
+
+[environment]
+build_timeout_sec = 900.0
+cpus = 1
+memory_mb = 2048
+storage_mb = 10240
+gpus = 0
+network_mode = "public"
+
+[[environment.mcp_servers]]
+name = "costco"
+transport = "stdio"
+command = "/opt/eval/start-mcp"
+args = []
